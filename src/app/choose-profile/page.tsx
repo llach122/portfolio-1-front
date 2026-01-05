@@ -32,10 +32,12 @@ export default function ChooseProfilePage() {
 
     // --- MANEJADORES DE ACCIÓN ---
 
+    // Maneja el registro de Administrador (redirige directamente)
     const handleAdminRegistration = async () => {
         setLocalLoading(true);
         setFleetError(''); 
         try {
+            // Payload: { role: 'admin' }
             const res = await authService.register({ role: 'admin' });
             
             if (res.user.status === 'inactive') {
@@ -52,6 +54,27 @@ export default function ChooseProfilePage() {
         }
     };
     
+    // Paso 1 de Conductor: Registra el rol y cambia la vista a 'driver'
+    const handleDriverRegistration = async () => {
+        setLocalLoading(true);
+        setFleetError(''); 
+        try {
+            console.log('📝 Registrando rol como conductor...');
+            // Payload: { role: 'driver' }
+            await authService.register({ role: 'driver' });
+            
+            // Si el registro es exitoso, cambiar la vista para pedir el código de flota
+            setSelection('driver');
+
+        } catch (error) {
+            console.error('❌ Error al registrar Conductor:', error);
+            alert('Error al registrar rol de conductor. Intente de nuevo.');
+        } finally {
+            setLocalLoading(false);
+        }
+    };
+    
+    // Paso 2 de Conductor: Une al usuario (ya registrado) a la flota
     const handleJoinFleet = async () => {
         if (!fleetCode) {
             setFleetError('Por favor, ingresa el código de flota.');
@@ -62,11 +85,15 @@ export default function ChooseProfilePage() {
         setFleetError('');
         
         try {
+            // Lógica de unirse a la flota (el usuario ya existe en la DB)
+            console.log('🔗 Intentando unirse a la flota con el código:', fleetCode);
             await apiFetch('/api/v1/users/join-fleet', {
                 method: 'POST',
+                // Payload: { code: fleetCode }
                 body: JSON.stringify({ code: fleetCode }),
             });
             
+            // El endpoint de join-fleet asume que actualiza el estado a 'active' y el backendUser
             router.replace('/dashboard');
             
         } catch (error: any) {
@@ -115,15 +142,19 @@ export default function ChooseProfilePage() {
                             {/* Botón para Elegir Admin */}
                             <button 
                                 onClick={handleAdminRegistration}
-                                className="w-full py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                                disabled={localLoading}
+                                className={`w-full py-4 rounded-xl font-semibold transition-colors 
+                                    ${localLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                             >
                                 Soy Administrador
                             </button>
                             
-                            {/* Botón para Elegir Driver (Activa la vista de Código de Flota) */}
+                            {/* Botón para Elegir Driver (Llama a la función de registro de rol) */}
                             <button 
-                                onClick={() => setSelection('driver')}
-                                className="w-full py-4 bg-cyan-500 text-white rounded-xl font-semibold hover:bg-cyan-600 transition-colors"
+                                onClick={handleDriverRegistration}
+                                disabled={localLoading}
+                                className={`w-full py-4 rounded-xl font-semibold transition-colors
+                                    ${localLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-500 hover:bg-cyan-600 text-white'}`}
                             >
                                 Soy Conductor (Ingresar Código)
                             </button>
@@ -166,7 +197,7 @@ export default function ChooseProfilePage() {
                                 Volver
                             </button>
                             <button 
-                                onClick={handleJoinFleet}
+                                onClick={handleJoinFleet} // Llama a la función de unión a flota
                                 disabled={localLoading || !fleetCode}
                                 className={`py-3 px-6 text-white rounded-xl font-semibold transition-colors 
                                     ${localLoading || !fleetCode ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-500 hover:bg-cyan-600'}`}

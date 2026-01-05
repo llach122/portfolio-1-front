@@ -24,3 +24,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@keyframes trackWayDrive {
+  /* Inicio: posición normal y un poco más pequeño */
+  0% { transform: translateX(0) scale(1); }
+  /* Medio: se mueve 3px a la derecha y se agranda un poco para el efecto de pulso */
+  50% { transform: translateX(3px) scale(1.05); } 
+  /* Fin: vuelve al inicio */
+  100% { transform: translateX(0) scale(1); }
+}
+
+/* Clase de utilidad para usar en el componente */
+.animate-trackway-drive {
+  animation: trackWayDrive 1.5s ease-in-out infinite alternate;
+}

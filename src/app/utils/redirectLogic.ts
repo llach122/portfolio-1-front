@@ -11,30 +11,40 @@ export async function handleFinalRedirection(
     
     const { role, status } = user;
     
-    // 1. CASO ACTIVO: ACCESO DIRECTO AL DASHBOARD
-    if (status === 'active') {
-        console.log('[Redirect] Usuario activo. Redirigiendo a /dashboard.');
-        router.replace('/dashboard');
+    // --- 1. CASOS ACTIVOS (ACCESO AL DASHBOARD) ---
+
+    // CASO A: Driver Activo (¡LA CORRECCIÓN SOLICITADA!)
+    if (role === 'driver' && status === 'active') {
+        console.log('[Redirect] Driver activo. Redirigiendo a /driver-dashboard.');
+        router.replace('/driver-dashboard');
         return;
     }
     
-    // 2. CASOS INACTIVOS 
+    // CASO B: Admin Activo
+    if (role === 'admin' && status === 'active') {
+        console.log('[Redirect] Admin activo. Redirigiendo a /dashboard.');
+        router.replace('/dashboard');
+        return;
+    }
 
-    // CASO A: Admin Inactivo 
+    // --- 2. CASOS INACTIVOS ---
+    
+    // CASO C: Admin Inactivo 
     if (role === 'admin' && status === 'inactive') {
         console.log('[Redirect] Admin inactivo. Redirigiendo a /pending.');
         router.replace('/pending');
         return;
     }
     
-    // CASO B: Driver Inactivo 
+    // CASO D: Driver Inactivo 
     if (role === 'driver' && status === 'inactive') {
+        // Asumiendo que /choose-profile es la página donde se pide el código de flota
         console.log('[Redirect] Driver inactivo. Redirigiendo a /choose-profile para completar registro.');
         router.replace('/choose-profile'); 
         return;
     }
 
-    // 3. CASO POR DEFECTO / FALLO
-    console.log(`[Redirect] Estado no manejado o rol inesperado: ${role}. Redirigiendo a /unauthorized.`);
+    // --- 3. CASO POR DEFECTO / FALLO ---
+    console.log(`[Redirect] Estado no manejado o rol inesperado: ${role}/${status}. Redirigiendo a /unauthorized.`);
     router.replace('/unauthorized');
 }
